@@ -1,9 +1,16 @@
 ## Study Project - Citizen Science for Image Recognition
 
-### Image Recognition for Citizen Science Monitoring Crowds - crowVID
+### Image Recognition for Citizen Science TRACKING INDOOR MOVEMENTS 
 
 #### Aim
-Monitor crowds during COVID-19 pandemic and report a gathering of a large number of people (in accordance with COVID-19 regulations).
-Case Study: Münster Hauptbahnhof
+To track the movement of individuals entering a building and count them according to their direction.
 
+#### Case Study
+Institute for Geoinformatics (IFGI)
+
+#### Project Steps
+![project steps]()
+
+#### Possible Applications
+Museums, Hospitals, Service Centers, Health Clinics, Government Offices, and other buildings.
 
