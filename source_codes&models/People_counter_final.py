@@ -1,8 +1,8 @@
 # USAGE
 # # To read and write back out to video:
 # python3 People_counter_final.py --prototxt mobilenet_ssd/MobileNetSSD_deploy.prototxt \
-# --model mobilenet_ssd/MobileNetSSD_deploy.caffemodel --input output/testhour1.avi \
-# --output output/output_e.avi
+# --model mobilenet_ssd/MobileNetSSD_deploy.caffemodel --input testhour1.avi \
+# --output output/einav.avi
 #
 # To read from webcam and write back out to disk:
 # python3 People_counter_final.py --prototxt mobilenet_ssd/MobileNetSSD_deploy.prototxt \
@@ -76,11 +76,19 @@ else:
 	print("[INFO] opening video file...")
 	vs = cv2.VideoCapture(args["input"])
 
-csvresult = open("/home/pi/results8.csv","w")
+# save counts to csv file
+csvresult = open("/home/pi/resultsnew.csv","w")
 with csvresult:
 	fnames=["exit","entrance","hall","office","frame","time"]
 	writer1 = csv.DictWriter(csvresult,fieldnames=fnames)
 	writer1.writeheader()
+
+# save each ID trajectory to csv file
+csvresult1 = open("/home/pi/trajectory1.csv","w")
+with csvresult1:
+	fnames1=["ID","centroidx","centroidy"]
+	writer2 = csv.DictWriter(csvresult1,fieldnames=fnames1)
+	writer2.writeheader()
 
 
 # initialize the video writer (we'll instantiate later if need be)
@@ -298,13 +306,20 @@ while fps._numFrames < args["num_frames"]:
 		cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 		cv2.circle(frame, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
+		csvresult1 = open("/home/pi/trajectory1.csv","a")
+        #fnames=["exit","entrance","hall","office","frame","time"]
+		writer2 = csv.DictWriter(csvresult1,fieldnames=fnames1)
+        #writer1.writeheader()
+		with csvresult1:     
+			writer2.writerow({"ID":objectID ,"centroidx":centroid[0], "centroidy":centroid[1]})
 	reporttime = (time.strftime("%H:%M:%S"))
-	csvresult = open("C:/Users/einav/Dropbox/winter semester 2020/Study Project CS Image Recognition/counter/counter/results1.csv","a")
+	csvresult = open("/home/pi/resultsnew.csv","a")
 	#fnames=["exit","entrance","hall","office","frame","time"]
 	writer1 = csv.DictWriter(csvresult,fieldnames=fnames)
 # 	writer1.writeheader()
 	with csvresult:     
 			writer1.writerow({"exit":totalDown ,"entrance":totalUp,"hall":hall,"office":office,"frame":totalFrames,"time":reporttime})
+	
 	# construct a tuple of information we will be displaying on the
 	# frame
 	info = [
@@ -360,6 +375,3 @@ else:
 
 # close any open windows
 cv2.destroyAllWindows()
-
-
-
