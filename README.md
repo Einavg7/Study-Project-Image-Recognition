@@ -8,6 +8,8 @@ To track the movement of individuals entering a building and count them accordin
 #### Case Study
 Institute for Geoinformatics (IFGI)
 
+<img src="images/ezgif.com-video-to-gif.gif">
+
 #### Project Steps
 <img src="images/projectSteps.png" height="400" width="550">
 
