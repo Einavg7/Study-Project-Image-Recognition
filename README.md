@@ -9,7 +9,7 @@ To track the movement of individuals entering a building and count them accordin
 Institute for Geoinformatics (IFGI)
 
 #### Project Steps
-![project steps](images/projectSteps.png)
+<img src="images/projectSteps.png" height="400" width="550">
 
 #### Possible Applications
 Museums, Hospitals, Service Centers, Health Clinics, Government Offices, and other buildings.
