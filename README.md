@@ -14,7 +14,7 @@ Institute for Geoinformatics (IFGI)
 #### Possible Applications
 Museums, Hospitals, Service Centers, Health Clinics, Government Offices, and other buildings.
 
-##### References
+#### References
 * Jia, Y. (n.d.). Caffe: Convolutional architecture for fast feature embedding. https://doi.org/10.1145/2647868.2654889
 * Liu, W., Anguelov, D., Erhan, D., Szegedy, C., Reed, S., Fu, C., & Berg, A. (2016). SSD: Single Shot MultiBox Detector. ECCV. 
 * Rosebrock, A. (2017). Object detection with deep learning and OpenCV - PyImageSearch. Retrieved 18 December 2020, from https://www.pyimagesearch.com/2017/09/11/object-detection-with-deep-learning-and-opencv/ 
