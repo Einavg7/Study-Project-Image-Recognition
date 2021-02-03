@@ -1,23 +1,34 @@
 ### Import the necessary packages
-###### First step is to make sure you have NumPy, SciPy and Matplotlib installed. Besides, installation of OpenCV version 3.3 is recommended. The libraries can be installed by simple 'pip install' command. For example, "$ pip install imutils", provided NumPy, SciPy, Matplotlib and OpenCV already installed in the system. After specifying the imports, we used centroid tracker class, videostream from imutils and OpenCV.
+###### First step is to make sure you have NumPy, SciPy and Matplotlib installed. Besides, installation of OpenCV version 3.3 is recommended. The libraries can be installed by simple 'pip install' command. For example, "$ pip install imutils", provided NumPy, SciPy, Matplotlib and OpenCV already installed in the system. After specifying the imports, we used centroid tracker class, videostream from imutils and OpenCV. PiCamera package provides python interface to RaspberryPi camera and PiRGBArray provides array for the camera outputs. The csv modules helps to read and write the tabular data in csv format.
 ```python
 from pyimagesearch.centroidtracker import CentroidTracker
 from pyimagesearch.trackableobject import TrackableObject
+from imutils.video.pivideostream import PiVideoStream
 from imutils.video import VideoStream
 from imutils.video import FPS
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+from csv import writer
 import numpy as np
 import argparse
 import imutils
 import time
 import dlib
 import cv2
+import csv
 ```
 
 ### Construct the argument parse and parse the arguments
 ###### Here we have three command line arguments namely; --prototxt, --model and --confidence, which are related to deep learning face detector.
 ###### 1.**"-- prototxt"** is the path to the Caffe 'deploy' prototxt.
 ###### 2.**"-- model"** defines the path to the pre-trained models.
-###### 3.**"-- confidence"** filters weak detection. *We have set our probability threshold value to 0.4 to filter weak detections.*
+###### 3.**"-- input"** defines the path to optional input video file.
+###### 4.**"-- output"** defines the output path.
+###### 5.**"-- confidence"** filters weak detection. *We have set our probability threshold value to 0.4 to filter weak detections.*
+###### 6.**"-- skip-frames"** skips 90 frame between each detection. We increased the FPS to maintain processing and object detection speed.
+###### 7.**"-- picamera"** detects whether the Pi camera is used or not.
+###### 8.**"-- num-frames"** defines the number of frames recordings forlive stream.
+###### 9.**"-- display"** detects if the frames should be displayed or not.
 
 ```python
 ap = argparse.ArgumentParser()
@@ -31,10 +42,14 @@ ap.add_argument("-o", "--output", type=str,
 	help="/home/pi/Downloads/people-counting-opencv")
 ap.add_argument("-c", "--confidence", type=float, default=0.4,
 	help="minimum probability to filter weak detections")
-ap.add_argument("-s", "--skip-frames", type=int, default=60,
+ap.add_argument("-s", "--skip-frames", type=int, default=90,
 	help="# of skip frames between detections")
 # ap.add_argument("-pi", "--picamera", type=int, default=-1,
 # 	help="whether or not the Raspberry Pi camera should be used")
+ap.add_argument("-n", "--num-frames", type=int, default=324000,
+	help="# of frames to loop over for FPS test")
+ap.add_argument("-d", "--display", type=int, default=-1,
+	help="Whether or not frames should be displayed")
 args = vars(ap.parse_args())
 ```
 
@@ -54,7 +69,7 @@ print("[INFO] loading model...")
 net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 ```
 
-###### Starts videostream as vs. With vs we would be able to capture frames from our camera. If a video path is not supplied, vs grabs a reference to the webcam
+###### Starts videostream as vs. With vs we would be able to capture frames from our camera. If a video path is not supplied, vs grabs a reference to the webcam. The captured data then will be directly stored in the the *csvresult* file in csv format. Additionally, file *csvresult1* stores the object ID data in csv format for visualization of the results.
 ```python
 if not args.get("input", False):
 	print("[INFO] starting video stream...")
@@ -63,6 +78,20 @@ if not args.get("input", False):
 else:
 	print("[INFO] opening video file...")
 	vs = cv2.VideoCapture(args["input"])
+
+# save counts to csv file
+csvresult = open("/home/pi/resultsnew.csv","w")
+with csvresult:
+	fnames=["exit","entrance","hall","office","frame","time"]
+	writer1 = csv.DictWriter(csvresult,fieldnames=fnames)
+	writer1.writeheader()
+
+# save each ID trajectory to csv file
+csvresult1 = open("/home/pi/trajectory1.csv","w")
+with csvresult1:
+	fnames1=["ID","centroidx","centroidy"]
+	writer2 = csv.DictWriter(csvresult1,fieldnames=fnames1)
+	writer2.writeheader()
 
 # initialize the video writer (we'll instantiate later if need be)
 writer = None
@@ -107,14 +136,12 @@ while True:
 	frame = vs.read()
 	frame = frame[1] if args.get("input", False) else frame
 
-	# if we are viewing a video and we did not grab a frame then we
-	# have reached the end of the video
+	# if we are viewing a video and we did not grab a frame then we have reached the end of the video
 	if args["input"] is not None and frame is None:
 		break
 
-	# resize the frame to have a maximum width of 500 pixels (the
-	# less data we have, the faster we can process it), then convert
-	# the frame from BGR to RGB for dlib
+	# resize the frame to have a maximum width of 500 pixels (theless data we have, the faster we can 
+	#process it), then convert the frame from BGR to RGB for dlib
 	frame = imutils.resize(frame, width=500)
 	rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -160,35 +187,29 @@ while True:
 ```python
 		# loop over the detections
 		for i in np.arange(0, detections.shape[2]):
-			# extract the confidence (i.e., probability) associated
-			# with the prediction
+			# extract the confidence (i.e., probability) associated with the prediction
 			confidence = detections[0, 0, i, 2]
 
-			# filter out weak detections by requiring a minimum
-			# confidence
+			# filter out weak detections by requiring a minimum confidence
 			if confidence > args["confidence"]:
-				# extract the index of the class label from the
-				# detections list
+				# extract the index of the class label from the detections list
 				idx = int(detections[0, 0, i, 1])
 
 				# if the class label is not a person, ignore it
 				if CLASSES[idx] != "person":
 					continue
 
-				# compute the (x, y)-coordinates of the bounding box
-				# for the object
+				# compute the (x, y)-coordinates of the bounding box for the object
 				box = detections[0, 0, i, 3:7] * np.array([W, H, W, H])
 				(startX, startY, endX, endY) = box.astype("int")
 
-				# construct a dlib rectangle object from the bounding
-				# box coordinates and then start the dlib correlation
-				# tracker
+				# construct a dlib rectangle object from the bounding box coordinates and then 
+				# start the dlib correlation tracker
 				tracker = dlib.correlation_tracker()
 				rect = dlib.rectangle(startX, startY, endX, endY)
 				tracker.start_track(rgb, rect)
 
-				# add the tracker to our list of trackers so we can
-				# utilize it during skip frames
+				# add the tracker to our list of trackers so we can utilize it during skip frames
 				trackers.append(tracker)
 
 	# otherwise, we should utilize our object *trackers* rather than
@@ -216,10 +237,8 @@ while True:
 	# draw a horizontal line in the center of the frame -- once an
 	# object crosses this line we will determine whether they were
 	# moving 'up' or 'down'
-	#cv2.line(frame, (0, H // 5), (W, H // 5), (0, 255, 255), 2)
-	#cv2.line(frame, (W // 5, 0), (W // 5, H), (0, 255, 255), 2)
-	#cv2.line(frame, ((4*W//5), 0), ((4*W//5), H), (0, 255, 255), 2)
-	#cv2.line(frame, (0, (4*H // 5)), (W, (4*H // 5)), (0, 255, 255), 2)
+	cv2.line(frame, (0, (3*H // 4)), (W, (3*H // 4)), (0, 255, 255), 2)
+	
 	
 	pts = np.array([[W // 4, 0], [W // 4, ((3*H // 4))], [(3*W // 4), ((3*H // 4))], [(3*W // 4), 0]])
 	isClosed = False
@@ -230,8 +249,7 @@ while True:
 * ###### ct.update is the core part of the code. It handles the simple object tracker with Python and OpenCV script.
 
 ```python
-    #use the centroid tracker to associate the (1) old object centroids with 
-    #(2) the newly computed object centroids.
+    #use the centroid tracker to associate the (1) old object centroids with (2) the newly computed object centroids.
     objects = ct.update(rects)
 ```
 ### Visualization process of tracked objects
@@ -239,16 +257,14 @@ while True:
 ```python
 	# loop over the tracked objects
 	for (objectID, centroid) in objects.items():
-		# check to see if a trackable object exists for the current
-		# object ID
+		# check to see if a trackable object exists for the current object ID
 		to = trackableObjects.get(objectID, None)
 
 		# if there is no existing trackable object, create one
 		if to is None:
 			to = TrackableObject(objectID, centroid)
 
-		# otherwise, there is a trackable object so we can utilize it
-		# to determine direction
+		# otherwise, there is a trackable object so we can utilize it to determine direction
 		else:
 			# the difference between the y-coordinate of the *current*
 			# centroid and the mean of *previous* centroids will tell
@@ -273,8 +289,7 @@ while True:
 			# check to see if the object has been counted or not
 			if not to.upc:
 				# if the direction is negative (indicating the object
-				# is moving up) AND the centroid is above the center
-			#	line, count the object
+				# is moving up) AND the centroid is above the center line, count the object
 				if directiony < 0 and centroid[1] < ((3*H // 4)) and (W // 4) < centroid[1] < (3*W // 4):
 					totalUp += 1
 					to.upc = True
@@ -302,7 +317,9 @@ while True:
 					to.hallc = True
 ```
 * ######  The centroid is displayed as a filled circle and the unique object ID number text. With this, we would be able to keep the track of all the objects/persons by associating with a unique assigned ID in the video stream.
+* ###### Finally, we stack up all the detected objects/persons in a tabular format using csv module. This module helps write the captured data in csv format which makes the visualization process easier. The data was stored in two different csv files, *csvresult* for object/person detection with time and frames, whereas *csvresult1* file stores the object/Person ID's.
 * ###### Apart from that, the screen will show the information about the toatl number of counted people in the hall, office, entered and exited.
+
 
 ```python
 		# store the trackable object in our dictionary
@@ -314,15 +331,28 @@ while True:
 		cv2.putText(frame, text, (centroid[0] - 10, centroid[1] - 10),
 			cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
 		cv2.circle(frame, (centroid[0], centroid[1]), 4, (0, 255, 0), -1)
+		csvresult1 = open("/home/pi/trajectory1.csv","a")
+        #fnames=["exit","entrance","hall","office","frame","time"]
+		writer2 = csv.DictWriter(csvresult1,fieldnames=fnames1)
+        #writer1.writeheader()
+		with csvresult1:     
+			writer2.writerow({"ID":objectID ,"centroidx":centroid[0], "centroidy":centroid[1]})
+	reporttime = (time.strftime("%H:%M:%S"))
+	csvresult = open("/home/pi/resultsnew.csv","a")
+	#fnames=["exit","entrance","hall","office","frame","time"]
+	writer1 = csv.DictWriter(csvresult,fieldnames=fnames)
+# 	writer1.writeheader()
+	with csvresult:     
+			writer1.writerow({"exit":totalDown ,"entrance":totalUp,"hall":hall,"office":office,"frame":totalFrames,"time":reporttime})
+	
 
 	# construct a tuple of information we will be displaying on the
 	# frame
 	info = [
 		("Entrance", totalUp),
 		("Exit", totalDown),
-		#("Status", status),
-        ("hall", hall),
-        ("office", office)
+		("hall", hall),
+        	("office", office)
 	]
 
 	# loop over the info tuples and draw them on our frame
