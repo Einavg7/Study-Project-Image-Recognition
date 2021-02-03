@@ -69,7 +69,7 @@ print("[INFO] loading model...")
 net = cv2.dnn.readNetFromCaffe(args["prototxt"], args["model"])
 ```
 
-###### Starts videostream as vs. With vs we would be able to capture frames from our camera. If a video path is not supplied, vs grabs a reference to the webcam. The captured data then will be directly stored in the the *csvresult* file in csv format. Additionally, file *csvresult1* stores the object ID data in csv format for visualization of the results.
+###### Starts videostream as vs. With vs we would be able to capture frames from our camera. If a video path is not supplied, vs grabs a reference to the webcam. The captured data then will be directly stored in the the *csvresult* file in csv format. Additionally, file *csvresult1* stores the object ID data (coordinates) in csv format for visualization of the results.
 ```python
 if not args.get("input", False):
 	print("[INFO] starting video stream...")
@@ -317,7 +317,7 @@ while True:
 					to.hallc = True
 ```
 * ######  The centroid is displayed as a filled circle and the unique object ID number text. With this, we would be able to keep the track of all the objects/persons by associating with a unique assigned ID in the video stream.
-* ###### Finally, we stack up all the detected objects/persons in a tabular format using csv module. This module helps write the captured data in csv format which makes the visualization process easier. The data was stored in two different csv files, *csvresult* for object/person detection with time and frames, whereas *csvresult1* file stores the object/Person ID's.
+* ###### Finally, we stack up all the detected objects/persons in a tabular format using csv module. This module helps write the captured data in csv format which makes the visualization process easier. The data was stored in two different csv files, *csvresult* for object/person detection with time and frames, whereas *csvresult1* file stores each of the object/Person ID coordinates.
 * ###### Apart from that, the screen will show the information about the toatl number of counted people in the hall, office, entered and exited.
 
 
