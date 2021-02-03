@@ -26,7 +26,7 @@ Institute for Geoinformatics (IFGI)
 #### Software
 Described in source_codes&models folder
 
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/OpenCV_Logo_with_text_svg_version.svg/1200px-OpenCV_Logo_with_text_svg_version.svg.png" height="100" width="100"> <img src="https://media-exp1.licdn.com/dms/image/C510BAQG-Kucg7UNZ7w/company-logo_200_200/0/1519877816639?e=2159024400&v=beta&t=TwCM41zuxbCRv4RTvF6EhEjpZzWFdeTThAme4fY5jqI" height="100" width="100"> <img src="https://upload.wikimedia.org/wikipedia/en/d/d9/Dlib_c%2B%2B_library_logo.png" height="100" width="130">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/OpenCV_Logo_with_text_svg_version.svg/1200px-OpenCV_Logo_with_text_svg_version.svg.png" height="110" width="100">   <img src="https://media-exp1.licdn.com/dms/image/C510BAQG-Kucg7UNZ7w/company-logo_200_200/0/1519877816639?e=2159024400&v=beta&t=TwCM41zuxbCRv4RTvF6EhEjpZzWFdeTThAme4fY5jqI" height="100" width="100">   <img src="https://upload.wikimedia.org/wikipedia/en/d/d9/Dlib_c%2B%2B_library_logo.png" height="100" width="130">
 
 #### Possible Applications
 Museums, Hospitals, Service Centers, Health Clinics, Government Offices, and other buildings.
